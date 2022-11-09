@@ -1,0 +1,109 @@
+body {
+	background: #707070;
+	font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+
+button {
+	color: #eeeeaa;;
+	background: #6666ee;
+	padding: 10px;
+	font-size:large;
+	box-shadow: none;
+}
+
+
+
+.container {
+	margin:  0px auto;
+	position:  absolute;
+	overflow-x: hidden;
+}
+
+.key {
+	float:  left;
+    text-align: center;
+	border: solid 4px #999999;
+	border-radius:  10px;
+	width:  50px;
+	height: 200px;
+}
+.key:hover {
+	border: solid 4px #ffff00;
+}
+
+.note-name {
+	margin: 0px auto;
+	position: absolute;
+	font-size: 0.8em;
+	font-weight: bold;
+	box-sizing: border-box;
+}
+
+.white-key {
+	background:  #ffffff;
+	margin-left: 1px;
+	margin-right: 1px;
+	margin-top: 160px;
+	border-radius:  10px;
+}
+.white-key .note-name {
+	color: blue;
+	margin-left: -10px;
+	bottom: 5px;
+}
+
+.black-key {
+	z-index: 1;
+	background: #333333;
+	margin-left:  -28px;
+	margin-right: -28px;
+	position: relative;
+}
+
+.black-key .note-name {
+	color: yellow;
+	margin-left: -15px;
+	top: 5px;
+}
+
+#consoleTop {
+	position: absolute;
+	top: 0px;
+	color: white;
+	text-align: center;
+	margin: 0px auto;
+	width: 100vw;
+	font-size: x-large;
+	padding: 20px;
+}
+
+#consoleBottom {
+	position: absolute;
+	bottom: 5px;
+	color: white;
+	text-align: center;
+	margin: 0px auto;
+	width: 100vw;
+	font-size: x-large;
+}
+
+#keyboard {
+	width: 100vw;
+	margin-top:100px;
+	overflow-x: hidden;
+}
+
+.root {
+	background-color: #ff5555;
+	color: white;
+}
+
+.diatonic {
+	background: #3333ff;
+	color: white;
+}
+
+.non-diatonic {
+	background: #999999;
+	color: white;
+}
