@@ -1,8 +1,23 @@
 const notes = ['C','Db','D','Eb','E','F','Gb','G','Ab','A','Bb','B'];
 const scales = {
   major: [0,2,4,5,7,9,11],
-  minor: [0,2,3,5,7,9,10]
+  natural_minor: [0,2,3,5,7,8,10],
+  harmonic_minor: [0,2,3,5,7,8,11],
+  melodic_minor: [0,2,3,5,7,9,11],
+  major_pentatonic: [0,2,4,7,9],
+  minor_pentatonic: [0,2,3,7,9],
+  whole_tone: [0,2,4,6,8,10],
+  diminished_whole_half: [0,2,3,5,6,8,9,11],
+  diminished_half_whol: [0,1,3,4,6,7,9,10],
 }
+
+const intro = [
+  { note: 'D-5', ms: 400 },
+  { note: 'E-5', ms: 400 },
+  { note: 'C-5', ms: 700 },
+  { note: 'C-4', ms: 800 },
+  { note: 'G-4', ms: 1000 },
+];
 
 const TUNING_HZ = 440;
 const MIDI_A4 = 69;
@@ -19,9 +34,32 @@ let root = 48;
 let showingNoteNames = true;
 let showingScale = false;
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
 const noteIndex = (m) => parseInt(m) % 12;
 const octave = (m) => Math.floor(m / 12) - 1;
 const getNoteName = (m) => `${ notes[noteIndex(m)] }-${ octave(m) }`;
+const getMidiNote = (note) => {
+  let keys = document.getElementsByClassName('key');
+  for (let key of keys) {
+    if (key.dataset.note == note) return key.dataset.midi;
+  }
+}
+const getKeyElement = (data) => {
+  let keys = document.getElementsByClassName('key');
+  for (let key of keys) {
+    if (key.dataset.note == data || key.dataset.midi == data) return key;
+  }
+}
+const getScale = _=> scales[document.getElementById('scaleSelect').value];
+const prettyScaleName = str => {
+  let words = str.split('_');
+  let prettyName = '';
+  words.forEach( word => {
+    prettyName += word[0].toUpperCase() + word.substring(1) + ' ';
+  });
+  return prettyName;
+}
 
 let listenForRoot = false;
 
@@ -57,7 +95,7 @@ const updateScale = ()=>{
       let midi = parseInt(k.dataset.midi);
       let interval = (midi - root) % 12;
       if (interval == 0) k.classList.add('root')
-      else if (scales.major.includes(interval)) k.classList.add('diatonic');
+      else if (getScale().includes(interval)) k.classList.add('diatonic');
       else k.classList.add('non-diatonic');
     }
   };
@@ -68,9 +106,16 @@ const toggleNoteNames = _=> {
   makeKeyboard();
 }
 
-const play = el => {
-  let { midi, note } = el.target.dataset;
+const changeScale = _=> {
+    updateScale();
+}
 
+const playFromElement = (el) => {
+  let { midi, note } = el.target.dataset;
+  play(midi, note);
+}
+
+const play = (midi, note) => {
   if (listenForRoot){
     listenForRoot = false;
     setRoot(midi, note);
@@ -84,9 +129,9 @@ const play = el => {
   osc.frequency.value = computeHz(midi);
   osc.connect(fader);
   osc.start();
-  osc.stop(ctx.currentTime + 2); 
-  fader.gain.linearRampToValueAtTime(1, ctx.currentTime + 0.1);
-  fader.gain.linearRampToValueAtTime(0, ctx.currentTime + 1.9);
+  osc.stop(ctx.currentTime + 1.0); 
+  fader.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.1);
+  fader.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.9);
 }
 
 const makeNoteLabel = (midi) => {
@@ -103,14 +148,15 @@ const makeKey = (midi) => {
   key.dataset.note = getNoteName(midi);
   key.classList.add('key');
   key.classList.add( key.dataset.note.includes('b') ? 'black-key' : 'white-key');
-  key.onclick = play;
+  key.onclick = playFromElement;
   return key;
 }
 
 const makeKeyboard = _=> {
   let previousContainers = document.getElementsByClassName('container');
-  if (previousContainers.length) {
-    for (let c in previousContainers) {
+  if (previousContainers && previousContainers.length) {
+    
+    for (let c of previousContainers) {
        c.remove();
     }
   }
@@ -131,11 +177,41 @@ const makeKeyboard = _=> {
   updateScale();
 }
 
+const makeScaleSelect = _=> {
+  let s = document.getElementById('scaleSelect');
+  Object.keys(scales).forEach( scale => {
+    let option = document.createElement('option');
+    option.text = prettyScaleName(scale);
+    option.value = scale;
+    s.onchange = changeScale;
+    s.add(option);
+  });
+}
+
+const playSequence = async (sequence) => {
+  settingRoot = false;
+
+  for (let i = 0; i < sequence.length; i++){
+    let obj = sequence[i];
+    let {note, ms} = obj;
+    let el = getKeyElement(note);
+    console.log('playing', note);
+    el.classList.add('playing');
+    el.click();
+    await sleep(ms);
+    console.log('next');
+    el.classList.remove('playing');
+  }
+}
+
 (_=> {
   makeKeyboard();
+  makeScaleSelect();
   setRoot(root, getNoteName(root));
 
   document.getElementById('rootButton').onclick = pickRoot;
   document.getElementById('toggleScaleButton').onclick = toggleScale;
   document.getElementById('toggleNoteNamesButton').onclick = toggleNoteNames;
+
+  document.body.onfocus = playSequence(intro);
 })()

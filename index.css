@@ -11,11 +11,9 @@ button {
 	box-shadow: none;
 }
 
-
-
 .container {
 	margin:  0px auto;
-	position:  absolute;
+	position:  relative;
 	overflow-x: hidden;
 }
 
@@ -27,7 +25,7 @@ button {
 	width:  50px;
 	height: 200px;
 }
-.key:hover {
+.key:hover, .playing {
 	border: solid 4px #ffff00;
 }
 
@@ -78,11 +76,9 @@ button {
 }
 
 #consoleBottom {
-	position: absolute;
-	bottom: 5px;
 	color: white;
 	text-align: center;
-	margin: 0px auto;
+	margin: 10px auto;
 	width: 100vw;
 	font-size: x-large;
 }
@@ -90,7 +86,7 @@ button {
 #keyboard {
 	width: 100vw;
 	margin-top:100px;
-	overflow-x: hidden;
+	overflow-x: scroll;
 }
 
 .root {
