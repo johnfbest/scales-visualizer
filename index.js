@@ -11,6 +11,9 @@ const scales = {
   diminished_half_whol: [0,1,3,4,6,7,9,10],
 }
 
+// TODO: Hash table for not values, combine w/ tempo? To use to compute durations
+
+
 const intro = [
   { note: 'D-5', ms: 400 },
   { note: 'E-5', ms: 400 },
@@ -23,13 +26,13 @@ const TUNING_HZ = 440;
 const MIDI_A4 = 69;
 const K_EQUAL_TEMP = Math.pow(2, (1/12));
 
-const range = {
-  start: 53,
-  end: 89
+let range = {
+  start: 48,
+  end: 84
 }
 
 let ctx = new AudioContext();
-let root = 48;
+let root = 60;
 
 let showingNoteNames = true;
 let showingScale = false;
@@ -51,8 +54,12 @@ const getKeyElement = (data) => {
     if (key.dataset.note == data || key.dataset.midi == data) return key;
   }
 }
+const getScaleName = _=> prettyScaleName(document.getElementById('scaleSelect').value);
+
 const getScale = _=> scales[document.getElementById('scaleSelect').value];
+
 const prettyScaleName = str => {
+  if (!str) return '';
   let words = str.split('_');
   let prettyName = '';
   words.forEach( word => {
@@ -68,16 +75,34 @@ const computeHz = midi => {
   return TUNING_HZ * Math.pow(K_EQUAL_TEMP, offset);
 }
 
-const pickRoot = _=> {
+const changeKey = _=> {
   listenForRoot = true;
+  document.getElementById('chooseKeyMessage').hidden = false;
+}
+
+const updateKeyLabel = ()=> {
+  document.getElementById('rootLabel').innerHTML = `${notes[noteIndex(root)]} ${getScaleName()}`;
 }
 
 const setRoot = (midi, note) => {
   root = parseInt(midi);
-  while (root >= range.start) root -= 12;
-  document.getElementById('rootLabel').innerHTML = note.split('-')[0];
+  while (root > range.start) root -= 12;
+  updateKeyLabel();
   if (showingScale) updateScale();
+  if (root < range.start) root +=12;
 }
+
+const playScale = () => {
+  let sequence = [];
+  getScale().forEach( interval => {
+    sequence.push({ note: getNoteName(root+interval), ms: 600 });
+  });
+  // include octave at end
+  sequence.push({ note: getNoteName(root+12), ms: 600 });
+  playSequence(sequence);
+}
+
+
 
 const toggleScale = ()=> {
   showingScale = !showingScale;
@@ -85,6 +110,11 @@ const toggleScale = ()=> {
 }
 
 const updateScale = ()=>{
+  updateKeyLabel();
+
+  let b = document.getElementById('toggleScaleButton');
+  b.innerHTML = showingScale ? 'Hide Scale' : 'Show Scale';
+  
   let keys = document.getElementsByClassName('key');
   //first handle turning them off
   for (let k of keys) {
@@ -97,13 +127,26 @@ const updateScale = ()=>{
       if (interval == 0) k.classList.add('root')
       else if (getScale().includes(interval)) k.classList.add('diatonic');
       else k.classList.add('non-diatonic');
-    }
+    } 
   };
 }
 
 const toggleNoteNames = _=> {
   showingNoteNames = !showingNoteNames;
   makeKeyboard();
+}
+
+let metronome = null;
+const toggleMetronome = el => {
+  if (metronome == null) {
+    metronome = setInterval(_=> {
+      click();
+    }, 500);
+  } else {
+    clearInterval(metronome);
+    metronome = null;
+  }
+
 }
 
 const changeScale = _=> {
@@ -115,9 +158,24 @@ const playFromElement = (el) => {
   play(midi, note);
 }
 
+const click = ()=> {
+  let fader = ctx.createGain();
+  fader.connect(ctx.destination);
+  fader.gain.value = 0;
+
+  let osc = ctx.createOscillator();
+  osc.frequency.value = 000;
+  osc.connect(fader);
+  osc.start();
+  osc.stop(ctx.currentTime + 0.2); 
+  fader.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+  fader.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.2);
+}
+
 const play = (midi, note) => {
   if (listenForRoot){
     listenForRoot = false;
+    document.getElementById('chooseKeyMessage').hidden = true;
     setRoot(midi, note);
   } 
 
@@ -129,9 +187,9 @@ const play = (midi, note) => {
   osc.frequency.value = computeHz(midi);
   osc.connect(fader);
   osc.start();
-  osc.stop(ctx.currentTime + 1.0); 
+  osc.stop(ctx.currentTime + 0.8); 
   fader.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.1);
-  fader.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.9);
+  fader.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.7);
 }
 
 const makeNoteLabel = (midi) => {
@@ -163,6 +221,7 @@ const makeKeyboard = _=> {
 
   const container = document.createElement('div');
   container.classList.add('container');
+  container.style.width= ((range.end - range.start) * 52) + "px";
   document.getElementById('keyboard').append(container);
 
   for (let midi = range.start; midi <= range.end; midi++ ){
@@ -204,14 +263,33 @@ const playSequence = async (sequence) => {
   }
 }
 
+const adjustRange = el => {
+  let b = el.target;
+  if (b.dataset.range =='lower' && b.dataset.increment=='expand') range.start--;
+  if (b.dataset.range =='lower' && b.dataset.increment=='contract') range.start++;
+  if (b.dataset.range =='upper' && b.dataset.increment=='expand') range.end++;
+  if (b.dataset.range =='upper' && b.dataset.increment=='contract') range.end--;
+  if (range.start > range.end) range.start = range.end-1;
+  makeKeyboard();
+}
+
 (_=> {
   makeKeyboard();
   makeScaleSelect();
   setRoot(root, getNoteName(root));
 
-  document.getElementById('rootButton').onclick = pickRoot;
+  document.getElementById('rootButton').onclick = changeKey;
   document.getElementById('toggleScaleButton').onclick = toggleScale;
-  document.getElementById('toggleNoteNamesButton').onclick = toggleNoteNames;
+  document.getElementById('playScaleButton').onclick = playScale;
+  //document.getElementById('toggleNoteNamesButton').onclick = toggleNoteNames;
+  //document.getElementById('toggleMetronomeButton').onclick = toggleMetronome;
 
-  document.body.onfocus = playSequence(intro);
+  let rangeButtons = document.getElementsByClassName('rangeButton');
+  for (let r = 0; r < rangeButtons.length; r++) {
+    rangeButtons[r].onclick = adjustRange;
+  }
+
+  document.getElementById('chooseKeyMessage').hidden = true;
+
+  //document.body.onfocus = playSequence(intro);
 })()

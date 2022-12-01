@@ -11,7 +11,12 @@ button {
 	box-shadow: none;
 }
 
+select {
+	font-size: 1.5em;
+}
+
 .container {
+	padding: 30px;
 	margin:  0px auto;
 	position:  relative;
 	overflow-x: hidden;
@@ -44,10 +49,11 @@ button {
 	margin-top: 160px;
 	border-radius:  10px;
 }
+
 .white-key .note-name {
 	color: blue;
 	margin-left: -10px;
-	bottom: 5px;
+	bottom: 40px;
 }
 
 .black-key {
@@ -65,7 +71,7 @@ button {
 }
 
 #consoleTop {
-	position: absolute;
+	position: fixed;
 	top: 0px;
 	color: white;
 	text-align: center;
@@ -75,7 +81,26 @@ button {
 	padding: 20px;
 }
 
+#rangeAdjustContainer {
+	position: relative;
+	width: 80vw;
+	left: 0px;
+	top: 90px;
+	padding: 20px;
+}
+
+#upperRangeContainer {
+	position: relative;
+	float: right;
+}
+
+#lowerRangeContainer {
+	position: relative;
+	float: left;
+}
+
 #consoleBottom {
+	position: fixed;
 	color: white;
 	text-align: center;
 	margin: 10px auto;
@@ -84,9 +109,12 @@ button {
 }
 
 #keyboard {
-	width: 100vw;
-	margin-top:100px;
+	width: 90vw;
+	margin-top:250px;
+	margin-left:5vw;
+	margin-right:5vw;
 	overflow-x: scroll;
+	display: inline-block;
 }
 
 .root {

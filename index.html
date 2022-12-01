@@ -3,20 +3,45 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Keyboard</title>
+	<title>Scale Visualizer</title>
 	<link rel="stylesheet" href="index.css"/>
 </head>
 <body>
 	<div id="consoleTop">
+		<h1>Scale Visualizer</h1>
+		<label>Choose Scale</label>
 		<select id="scaleSelect"></select>
-		<button id="rootButton">Change Root</button>
-		<button id="toggleScaleButton">Toggle Scale</button>
+		<hr>
+		<button id="toggleScaleButton">Show Scale</button>
+		<button id="rootButton">Change Key (starting note)</button>
+		<button id="playScaleButton">Play Scale</button>
+		<br>
+		<span id="chooseKeyMessage">To choose the new key, click a note ...</span>
+		<!--
 		<button id="toggleNoteNamesButton">Toggle Note Names</button>
+		<button id="toggleMetronomeButton">Toggle Metronome</button>
+		-->
 	</div>
+	<!--
+	<div id="rangeAdjustContainer">
+		<div id="lowerRangeContainer">
+			<span>Lower Range</span>
+			<br>
+			<button class="rangeButton" data-range="lower" data-increment="expand"><</button>
+			<button class="rangeButton" data-range="lower" data-increment="contract">></button>
+		</div>
+		<div id="upperRangeContainer">
+			<span>Upper Range</span>
+			<br>
+			<button class="rangeButton" data-range="upper" data-increment="contract"><</button>
+			<button class="rangeButton" data-range="upper" data-increment="expand">></button>
+		</div>
+	</div>
+-->
 	<div id="keyboard"></div>
 	<div id="consoleBottom">
 		<div id="rootLabelContainer">
-			Root: <span id="rootLabel"></span>
+			Key: <span id="rootLabel"></span>
 		</div>
 	</div>
 	<script src="index.js"></script>
